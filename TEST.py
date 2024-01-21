@@ -28,14 +28,39 @@ class SAW():
         plt.scatter(*zip(*self.path), s=10, c='k')
         # draw lines in red
         plt.plot(*zip(*self.path), c='r')
-        TotalLength=0       
+        TotalLength=0
+        MaxDistancePosX=0 
+        MaxDistanceNegX=0  
+        MaxDistancePosY=0 
+        MaxDistanceNegY=0      
         for i in range(1,len(self.path)):    #go through all points of the saw
             CurrentPoint=self.path[i]        
             Length=abs(CurrentPoint[0])+abs(CurrentPoint[1])    #length of current point in saw from 0,0
             TotalLength +=Length
+            if CurrentPoint[0]>MaxDistancePosX:     #keep track of the biggest distance from 0,0 in the saw
+                MaxDistancePosX=CurrentPoint[0]
+            elif CurrentPoint[0]<MaxDistanceNegX:
+                MaxDistanceNegX=CurrentPoint[0]
+            if CurrentPoint[1]>MaxDistancePosY:
+                MaxDistancePosY=CurrentPoint[1]
+            elif CurrentPoint[1]<MaxDistanceNegY:
+                MaxDistanceNegY=CurrentPoint[1]
+        Xrange=MaxDistancePosX-MaxDistanceNegX          #check which axis has a greater range
+        Yrange=MaxDistancePosY-MaxDistanceNegY
+        if Xrange>Yrange:                           #set the other axis to the same range so the saw gets plotted in a grid with equal x and y lims
+            MaxDistancePosY+=(Xrange-Yrange)/2
+            MaxDistanceNegY-=(Xrange-Yrange)/2
+        elif Yrange>Xrange:
+            MaxDistancePosX+=(Yrange-Xrange)/2
+            MaxDistanceNegX-=(Yrange-Xrange)/2
+
+        plt.xlim(MaxDistanceNegX-1,MaxDistancePosX+1)       #update x and y lims
+        plt.ylim(MaxDistanceNegY-1,MaxDistancePosY+1)
+        ax = plt.gca()
+        ax.set_aspect('equal', adjustable='box')  
+        #average saw length: total length divided by total points       
         AvgLength=TotalLength/(len(self.path)-1)
-        print(AvgLength)
-        #average saw length: total length divided by total points    
+        print(AvgLength)  
         plt.show()
 
     
@@ -46,6 +71,6 @@ class SAW():
 # show_path(path)
         
 Newsaw = SAW()
-Updatedsaw = Newsaw+5
+Updatedsaw = Newsaw+50000
 Updatedsaw.__pos__()
 #Updatedsaw = Newsaw+10
