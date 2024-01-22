@@ -3,9 +3,8 @@ from matplotlib import pyplot as plt
 plt.style.use('Solarize_Light2')
 import copy
 import time
-
+import math
 start = time.time()
-#we define sqrt(3)/2 as 0.8660254037844386, to avoid rounding errors (doesn't do anything, you can change back again)
 #We still gotta do stuf with the super class that like combines the 2, but idk maybe tuesday
 class SAW(): #Square Lattice
     def __init__(self, path=[(0,0)]):
@@ -26,7 +25,8 @@ class SAW(): #Square Lattice
                     aoptions.append(options[i]) # stopt ze in de toegestaande opties
             if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
                 illegal.append((x,y)) #makes this point illegal for 1 iteration so that it wont literally take this path again
-                del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)   
+                del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
+                x, y = self2.path[-1][0], self2.path[-1][1] #x, y back to your old x, y   
             else: # if there are options
                 u, v = choice(aoptions) #finds a random path from the possible options
                 x, y = u, v #swaps back to our original values
@@ -88,20 +88,20 @@ class HEX(): #Hexagonal Lattice, work in progress
         hexbool = True #2 different option lists, depending where on the hexagon you are (flipped on the y axis, flips every move)
         while len(self2.path)<NewMaxLength:
             if hexbool == True: #Reason for these options will be added in the report
-                options = [(x+1, y), (x-1/2, y+0.8660254037844386), (x-1/2, y-0.8660254037844386)] #all the potential options
+                options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #all the potential options
             else: #either True or false
-                options =  [(x-1, y), (x+1/2, y+0.8660254037844386), (x+1/2, y-0.8660254037844386)]
+                options =  [(x-1, y), (x+1/2, y+math.sqrt(3)/2), (x+1/2, y-math.sqrt(3)/2)]
 
             # pick the closest point  without crossing itself
             aoptions = [] # allowed options list
             for i in range(0,len(options)):
                 if options[i] not in self2.path and options[i] not in illegal:
                     aoptions.append(options[i]) # stopt ze in de toegestaande opties
+            print("laatste punt in pad: ", self2.path[-1], "opties: ", aoptions, "hexbool: ", hexbool )
             if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
                 illegal.append((x,y)) #makes this point illegal for 1 iteration so that it wont literally take this path again
-                print("voor delete:", self2.path[-1])
-                del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)   
-                print("na delete:", self2.path[-1])
+                del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
+                x, y = self2.path[-1][0], self2.path[-1][1] #x,y back to your old x, y
             else: # if there are options
                 u, v = choice(aoptions) #finds a random path from the possible options
                 x, y = u, v #swaps back to our original values
@@ -156,11 +156,10 @@ class HEX(): #Hexagonal Lattice, work in progress
 #if __name__ == '__main__': 
 # path = pathing(100000) #decides the length of the saw
 # show_path(path)
-        
 Newsaw = SAW()
 Newhex = HEX()
-Updatedsaw = Newsaw+100
-Updatedhex = Newhex+100
+Updatedsaw = Newsaw+300
+Updatedhex = Newhex+300
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
 end = time.time()
