@@ -20,7 +20,6 @@ class SAW():
         NewMaxLength = other+len(self2.path) #nieuwe maximale lengte berekenen we nu
         CurrentPoint=self2.path[-1]
         x, y = CurrentPoint[0], CurrentPoint[1]
-        k=1
         illegal = [] #the one iteration illegal maker, to make sure that backtracking works and the SAW doesn't take the same path twice in a row
         while len(self2.path)<NewMaxLength: 
             options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #all the potential options
