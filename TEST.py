@@ -79,6 +79,33 @@ class HEX(): #Hexagonal Lattice, work in progress
     def __init__(self, path=[(0,0)]):
         HEX.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
     #2D self-avoiding random walk laten groeien
+    
+    def hexdistance(self): #calculates the average distance from endpoint to origin in a hex lattice
+        point = self.path[-1] #endpoint
+        x = point[0]
+        y = point[1]
+        y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
+        x_offset = abs(x)/1.5 #amount you move in the x direction after 2 moves going in the same direction, you go in the y direction ones
+        if x_offset-math.floor(x_offset)==0: #checks if x is a multiple of 1.5, hence you need to move an even number of moves to the right/left
+            x_offset = 2*math.floor(x_offset) #total amount of moves needed
+        else:
+            x_offset = 2*math.floor(x_offset)+1 # the extra move
+        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
+        if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
+            if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
+                distance = x_offset #staircasing works fine here
+            else: 
+                distance = x_offset+y_offset-math.floor(x_offset/2)
+                #you first go to x=0, this is the x_offset. in this you moved floor(x_offset/2) times in the y direction (14->7, 15->7)
+                #because you moved that much in the y direction, you have subtract it from the extra y_offset you have to move
+
+        elif x<0: # if you moved an odd number of moves in the x direction, your last move will be a diagonal move
+            if (x_offset-1)>=2*(y_offset-1): #takes it into account, works out
+                distance = x_offset #staircasing works
+            else:
+                distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
+        print("hex distance:", distance)
+
     def __add__(self, other): #self = length of path and other is how much you grow it by
         self2 = copy.copy(self) #kopiërt de self
         NewMaxLength = other+len(self2.path) #nieuwe maximale lengte berekenen we nu
@@ -97,7 +124,6 @@ class HEX(): #Hexagonal Lattice, work in progress
             for i in range(0,len(options)):
                 if options[i] not in self2.path and options[i] not in illegal:
                     aoptions.append(options[i]) # stopt ze in de toegestaande opties
-            print("laatste punt in pad: ", self2.path[-1], "opties: ", aoptions, "hexbool: ", hexbool )
             if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
                 illegal.append((x,y)) #makes this point illegal for 1 iteration so that it wont literally take this path again
                 del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
@@ -148,8 +174,14 @@ class HEX(): #Hexagonal Lattice, work in progress
         ax.set_aspect('equal', adjustable='box')  
         #average saw length: total length divided by total points       
         AvgLength=TotalLength/(len(self.path)-1)
-        print(AvgLength)  
+        # print(AvgLength) not important appearently this wasn't even what was asked
+        distance = HEX.hexdistance(self) #distance endpoint to origin
         plt.show()
+    
+
+
+
+
 
 #main
     
@@ -158,8 +190,9 @@ class HEX(): #Hexagonal Lattice, work in progress
 # show_path(path)
 Newsaw = SAW()
 Newhex = HEX()
-Updatedsaw = Newsaw+300
-Updatedhex = Newhex+300
+Updatedsaw = Newsaw+30
+Updatedhex = Newhex+30
+HEX.hexdistance(Updatedhex)
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
 end = time.time()
