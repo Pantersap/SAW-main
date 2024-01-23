@@ -5,7 +5,24 @@ import copy
 import time
 import math
 start = time.time()
-#We still gotta do stuf with the super class that like combines the 2, but idk maybe tuesday
+""" We still gotta do stuf with the super class that like combines the 2, but idk maybe tuesday
+ dingen die we in de recursieve formule van Z_N moeten berekenen:
+1: aantal walks, gwn de recursieve formule, er steeds 1 bij optrekken aan het einde van de walk
+2: lattice constant, doe je aan het hele einde, door gwn z_n^(1/n_max) te doen
+3: average distance from endpoint to origin for a set the set of walks:
+    naast dat we aan het einde van iedere walk een 1 optellen voor het aantal paden, berekenen we ook distance van endpoint to origin.
+    Dit is gwn abs(x)+abs(y) voor square en het is de hexdistance() functie voor hexagonal.
+    Dan aan het einde delen we de totale lengte door Z_N en we hebben average distance (we kunnen dus zowel total als average distance printen)
+4: rauwe average distance (als in pythagoras):
+    Simpelweg sqrt(x^2+y^2) per walk en tellen we hetzelfde op als de echte average distance (weer kunnen we beide printen)
+We printen dus 6 dingenn:
+Z_N; 
+lattice constant approximatie voor die N;
+average distance eindpunt-oorsprong voor die N
+total distance eindpunt-oorsprong voor die N
+rauwe average distance eindpunt-oorsprong voor die N
+rauwe total distance eindpunt-oorsprong voor die N
+"""
 class SAW(): #Square Lattice
     def __init__(self, path=[(0,0)]):
         SAW.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
@@ -104,7 +121,7 @@ class HEX(): #Hexagonal Lattice, work in progress
                 distance = x_offset #staircasing works
             else:
                 distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
-        print("hex distance:", distance)
+        print("hex distance:", int(round(distance, 1))) #fixes rounding errors
 
     def __add__(self, other): #self = length of path and other is how much you grow it by
         self2 = copy.copy(self) #kopiërt de self
@@ -192,7 +209,6 @@ Newsaw = SAW()
 Newhex = HEX()
 Updatedsaw = Newsaw+30
 Updatedhex = Newhex+30
-HEX.hexdistance(Updatedhex)
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
 end = time.time()
