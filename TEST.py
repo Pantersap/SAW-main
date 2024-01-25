@@ -77,8 +77,18 @@ class SAW():                                                    #Square Lattice
             MaxDistancePosX+=(Yrange-Xrange)/2
             MaxDistanceNegX-=(Yrange-Xrange)/2
 
+
         plt.xlim(MaxDistanceNegX-1,MaxDistancePosX+1)       #update x and y lims
         plt.ylim(MaxDistanceNegY-1,MaxDistancePosY+1)
+        default_x_ticks=[]
+        default_y_ticks=[]
+        for i in range(-1+int(MaxDistanceNegX),int(MaxDistancePosX)+2):
+            default_x_ticks.append(i)                       #create an array for xticks, to create a lattice
+        for i in range(-1+int(MaxDistanceNegY),int(MaxDistancePosY+2)):
+            default_y_ticks.append(i)                       #same for yticks
+        plt.xticks(default_x_ticks)
+        plt.yticks(default_y_ticks)
+
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')            #make sure x and y are equally large in the figure    
         plt.show()                                          #show plot
@@ -205,9 +215,9 @@ class HEX(): #Hexagonal Lattice, work in progress
 # show_path(path)
 Newsaw = SAW()
 Newhex = HEX()
-Updatedsaw = Newsaw+150
-Updatedhex = Newhex+150
+Updatedsaw = Newsaw+20
+Updatedhex = Newhex+100
 Updatedsaw.__pos__()
-Updatedhex.__pos__()
+#Updatedhex.__pos__()
 end = time.time()
 print("time:", end-start)
