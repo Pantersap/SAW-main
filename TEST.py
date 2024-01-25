@@ -93,22 +93,22 @@ class SAW():                                                    #Square Lattice
         ax.set_aspect('equal', adjustable='box')            #make sure x and y are equally large in the figure    
         plt.show()                                          #show plot
 
-class HEX(): #Hexagonal Lattice, work in progress
+
+class HEX():                            #Hexagonal Lattice
     def __init__(self, path=[(0,0)]):
-        HEX.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
-    #2D self-avoiding random walk laten groeien
+        HEX.path = path                 #HEX.path stores the previous path
     
-    def hexdistance(self): #calculates the average distance from endpoint to origin in a hex lattice
-        point = self.path[-1] #endpoint
-        x = point[0]
-        y = point[1]
+    def hexdistance(self):      #calculates the average distance from endpoint to origin in a hex lattice
+        point = self.path[-1]   #endpoint
+        x = point[0]            #x origin
+        y = point[1]            #y origin
         y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
         x_offset = abs(x)/1.5 #amount you move in the x direction after 2 moves going in the same direction, you go in the y direction ones
         if x_offset-math.floor(x_offset)==0: #checks if x is a multiple of 1.5, hence you need to move an even number of moves to the right/left
-            x_offset = 2*math.floor(x_offset) #total amount of moves needed
+            x_offset = 2*math.floor(x_offset)       #total amount of moves needed
         else:
-            x_offset = 2*math.floor(x_offset)+1 # the extra move
-        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
+            x_offset = 2*math.floor(x_offset)+1     #add the extra move
+
         if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
             if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
                 distance = x_offset #staircasing works fine here
@@ -126,7 +126,7 @@ class HEX(): #Hexagonal Lattice, work in progress
 
     def __add__(self, other): #self = length of path and other is how much you grow it by
         self2 = copy.copy(self) #kopiërt de self
-        NewMaxLength = other+len(self2.path) #nieuwe maximale lengte berekenen we nu
+        NewMaxLength = other+len(self2.path) #calculate new maximal length
         CurrentPoint=self2.path[-1]
         x, y = CurrentPoint[0], CurrentPoint[1]
         illegal = [] #the one iteration illegal maker, to make sure that backtracking works and the SAW doesn't take the same path twice in a row
@@ -146,7 +146,7 @@ class HEX(): #Hexagonal Lattice, work in progress
             for i in range(0,len(options)):
                 roundedoption = (math.floor(2*options[i][0])/2, math.floor(2*options[i][1])/2) #rounded option
                 if roundedoption not in roundedpath and roundedoption not in illegal:
-                    aoptions.append(options[i]) # stopt ze in de toegestaande opties
+                    aoptions.append(options[i]) #add them to allowed options
             if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
                 illegal.append((math.floor(2*x)/2, math.floor(2*y)/2)) #makes this point illegal for 1 iteration so that it wont literally take this path again (it's already rounded for use)
                 del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
@@ -161,8 +161,8 @@ class HEX(): #Hexagonal Lattice, work in progress
         return self2
 
     #show plot
-    def __pos__(self): # het tonen van de SAW. MOET NOG COMPLEET AANGEPAST WORDEN VOOR HEX, VOORAL DE AVERAGE!
-        plt.figure(figsize=(100, 100))
+    def __pos__(self):
+        plt.figure()
         # draw points
         plt.scatter(*zip(*self.path), s=10, c='k')
         # draw lines in red
@@ -218,6 +218,6 @@ Newhex = HEX()
 Updatedsaw = Newsaw+20
 Updatedhex = Newhex+100
 Updatedsaw.__pos__()
-#Updatedhex.__pos__()
+Updatedhex.__pos__()
 end = time.time()
 print("time:", end-start)
