@@ -4,7 +4,6 @@ plt.style.use('Solarize_Light2')
 import copy
 import time
 import math
-start = time.time()
 """ We still gotta do stuf with the super class that like combines the 2, but idk maybe tuesday
  dingen die we in de recursieve formule van Z_N moeten berekenen:
 1: aantal walks, gwn de recursieve formule, er steeds 1 bij optrekken aan het einde van de walk
@@ -23,6 +22,51 @@ total distance eindpunt-oorsprong voor die N
 rauwe average distance eindpunt-oorsprong voor die N
 rauwe total distance eindpunt-oorsprong voor die N
 """
+def Walking(n_max, n, point, path): #recursief checken, niet super efficiënt maar het werkt.
+     #n_max = the length of a path, n = how long your path is right now, point = the point you're on, path = the path of your path (Hugo)
+    
+    #End of the recursion
+    if n == n_max: #1 walk got finished
+        distance = abs(point[0])+abs(point[1]) #distance in square grid
+        return 1, distance
+    
+    #Body of the recursion
+    path.append(point) # adds our new point to the path 
+    Zn = 0 #amount of paths leading away from this point in the path
+    distance = 0 # total distance from endpoint to origin of all the paths coming from this point
+    x = point[0]
+    y = point[1]
+    options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #your options
+    for i in range(0,len(options)): #checkt elk mogelijke pad vanaf een bepaald punt
+        newpoint = options[i] #our new point
+        if newpoint not in path:
+            Newvalues = Walking(n_max,n+1,newpoint,path)
+            Zn += Newvalues[0]
+            distance += Newvalues[1]
+
+    #out of the recursion
+    path.remove(point) #we've found every walk from our point, so we go back to our previous point in the path
+
+    return Zn, distance # the amount of walks from our point that we found will be given back
+
+def Pathwalking(k): #our actual path calculator, that calculates the red stuff 
+    oldμ = 69 #nonsensical value so n=1 doesn't cause issues at calculating the lattice constant approximation decrease
+    for n in range(1,k+1): #k+1 cause range doesn't pick the last element
+        start = time.time()
+        path = []
+        Zn, distance = Walking(n, 0, (0,0), path) #starts in (0,0) on an empty saw (length 0)
+        μ = Zn**(1/n) #lattice constant approximation
+        averagedistance = distance/Zn # averagedistance = total distance divided by the amount
+        print(n)
+        print("amount of paths:", Zn)
+        print("lattice constant approximation:", μ)
+        print("lattice constant approximation decrease:", oldμ-μ) #at n=1 this is nonsense as it's the first μ
+        print("average distance endpoint to origin:", averagedistance)
+        end = time.time()
+        print("time taken:", end-start)
+        print("")
+        oldμ = μ #houdt de vorige lattice constant approximation bij 
+
 class SAW(): #Square Lattice
     def __init__(self, path=[(0,0)]):
         SAW.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
@@ -160,7 +204,7 @@ class HEX(): #Hexagonal Lattice, work in progress
         return self2
 
     #show plot
-    def __pos__(self): # het tonen van de SAW. MOET NOG COMPLEET AANGEPAST WORDEN VOOR HEX, VOORAL DE AVERAGE!
+    def __pos__(self):
         plt.figure(figsize=(100, 100))
         # draw points
         plt.scatter(*zip(*self.path), s=10, c='k')
@@ -214,9 +258,8 @@ class HEX(): #Hexagonal Lattice, work in progress
 # show_path(path)
 Newsaw = SAW()
 Newhex = HEX()
-Updatedsaw = Newsaw+150
-Updatedhex = Newhex+150
+Updatedsaw = Newsaw+30
+Updatedhex = Newhex+30
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
-end = time.time()
-print("time:", end-start)
+Pathwalking(18)
