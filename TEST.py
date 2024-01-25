@@ -121,6 +121,10 @@ class HEX(): #Hexagonal Lattice, work in progress
         x, y = CurrentPoint[0], CurrentPoint[1]
         illegal = [] #the one iteration illegal maker, to make sure that backtracking works and the SAW doesn't take the same path twice in a row
         hexbool = True #2 different option lists, depending where on the hexagon you are (flipped on the y axis, flips every move)
+        roundedpath = [] #To fix floating point errors, we will only look at y rounded down to the nearest .5
+        for i in range(0,len(self2.path)):
+            roundedpath.append((self2.path[i][0], math.floor(2*self2.path[i][1])/2)) #i'th path, you round y down to the nearest .5. x is already a multiple of .5
+            
         while len(self2.path)<NewMaxLength:
             if hexbool == True: #Reason for these options will be added in the report
                 options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #all the potential options
@@ -130,16 +134,19 @@ class HEX(): #Hexagonal Lattice, work in progress
             # pick the closest point  without crossing itself
             aoptions = [] # allowed options list
             for i in range(0,len(options)):
-                if options[i] not in self2.path and options[i] not in illegal:
+                roundedoption = (math.floor(2*options[i][0])/2, math.floor(2*options[i][1])/2) #rounded option
+                if roundedoption not in roundedpath and roundedoption not in illegal:
                     aoptions.append(options[i]) # stopt ze in de toegestaande opties
             if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
-                illegal.append((x,y)) #makes this point illegal for 1 iteration so that it wont literally take this path again
+                illegal.append((math.floor(2*x)/2, math.floor(2*y)/2)) #makes this point illegal for 1 iteration so that it wont literally take this path again (it's already rounded for use)
                 del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
+                del roundedpath[-1] #obviously also has to delete the rounded version of this point
                 x, y = self2.path[-1][0], self2.path[-1][1] #x,y back to your old x, y
             else: # if there are options
                 u, v = choice(aoptions) #finds a random path from the possible options
                 x, y = u, v #swaps back to our original values
                 self2.path.append((x, y)) #new piece of path added
+                roundedpath.append((math.floor(2*x)/2, math.floor(2*y)/2))
             hexbool = hexbool*-1# you're moving either by adding a new path or by deleting your last path, so hexbool changes
         return self2
 
@@ -182,8 +189,8 @@ class HEX(): #Hexagonal Lattice, work in progress
         ax.set_aspect('equal', adjustable='box')  
         #average saw length: total length divided by total points       
         AvgLength=TotalLength/(len(self.path)-1)
-        print(AvgLength)
-        #average saw length: total length divided by total points    
+        # print(AvgLength) not important appearently this wasn't even what was asked
+        distance = HEX.hexdistance(self) #distance endpoint to origin
         plt.show()
     
 
@@ -197,7 +204,9 @@ class HEX(): #Hexagonal Lattice, work in progress
 # path = pathing(100000) #decides the length of the saw
 # show_path(path)
 Newsaw = SAW()
-Updatedsaw = Newsaw+5
+Newhex = HEX()
+Updatedsaw = Newsaw+150
+Updatedhex = Newhex+150
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
 end = time.time()
