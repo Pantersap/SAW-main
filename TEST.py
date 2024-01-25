@@ -182,8 +182,8 @@ class HEX(): #Hexagonal Lattice, work in progress
         ax.set_aspect('equal', adjustable='box')  
         #average saw length: total length divided by total points       
         AvgLength=TotalLength/(len(self.path)-1)
-        # print(AvgLength) not important appearently this wasn't even what was asked
-        distance = HEX.hexdistance(self) #distance endpoint to origin
+        print(AvgLength)
+        #average saw length: total length divided by total points    
         plt.show()
     
 
@@ -197,9 +197,7 @@ class HEX(): #Hexagonal Lattice, work in progress
 # path = pathing(100000) #decides the length of the saw
 # show_path(path)
 Newsaw = SAW()
-Newhex = HEX()
-Updatedsaw = Newsaw+300
-Updatedhex = Newhex+30
+Updatedsaw = Newsaw+5
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
 end = time.time()
