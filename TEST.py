@@ -4,24 +4,7 @@ plt.style.use('Solarize_Light2')
 import copy
 import time
 import math
-""" 
- dingen die we in de recursieve formule van Z_N moeten berekenen:
-1: aantal walks, gwn de recursieve formule, er steeds 1 bij optrekken aan het einde van de walk
-2: lattice constant, doe je aan het hele einde, door gwn z_n^(1/n_max) te doen
-3: average distance from endpoint to origin for a set the set of walks:
-    naast dat we aan het einde van iedere walk een 1 optellen voor het aantal paden, berekenen we ook distance van endpoint to origin.
-    Dit is gwn abs(x)+abs(y) voor square en het is de hexdistance() functie voor hexagonal.
-    Dan aan het einde delen we de totale lengte door Z_N en we hebben average distance (we kunnen dus zowel total als average distance printen)
-4: rauwe average distance (als in pythagoras):
-    Simpelweg sqrt(x^2+y^2) per walk en tellen we hetzelfde op als de echte average distance (weer kunnen we beide printen)
-We printen dus 6 dingenn:
-Z_N; 
-lattice constant approximatie voor die N;
-average distance eindpunt-oorsprong voor die N
-total distance eindpunt-oorsprong voor die N
-rauwe average distance eindpunt-oorsprong voor die N
-rauwe total distance eindpunt-oorsprong voor die N
-"""
+
 def hexdistance(endpoint): #calculates the average distance from endpoint to origin in a hex lattice
         '''
         This function calculates the average distance from endpoint to origin in a hex lattice.
@@ -134,13 +117,14 @@ def Pathwalking(k, type):  #our actual path calculator
     type: The type of the SAW that Walking() will be called for (square or hexagonal, with square being the default setting)
     
     This function does not return anything. 
-    Instead, it prints 6 things:
-    1: What length SAW's the values below this belong to
-    2: The amount of walks of this length
-    3: The lattice constant approximation for this length
-    4: The decrease of this lattice constant approximation compared to our previous one
-    5: The average distance from endpoint to origin for this set of walks belonging to this length
-    6: The time it took to calculate all of this for this length
+    Instead, it prints 7 things:
+    1: The type of our SAW
+    2: What length SAW's the values below this belong to
+    3: The amount of walks of this length
+    4: The lattice constant approximation for this length
+    5: The decrease of this lattice constant approximation compared to our previous one
+    6: The average distance from endpoint to origin for this set of walks belonging to this length
+    7: The time it took to calculate all of this for this length
     This function prints an empty line after that to make it easier to read.
     '''
     oldμ = 69              #nonsensical value so n=1 does not cause issues at calculating the lattice constant approximation decrease
@@ -152,7 +136,8 @@ def Pathwalking(k, type):  #our actual path calculator
         μ = Zn**(1/n)                   #lattice constant approximation
         averagedistance = distance/Zn   #averagedistance = total distance divided by the 
         
-        print(n)                        #print all important information                        
+        print(type)                     #print all important information
+        print(n)                                               
         print("amount of walks:", Zn)
         print("lattice constant approximation:", μ)
         print("lattice constant approximation decrease:", oldμ-μ) 
@@ -162,7 +147,28 @@ def Pathwalking(k, type):  #our actual path calculator
         print("")
         oldμ = μ      #keeps track of the previous lattice constant
 
-class SAW(): #main class for generating SAWs
+class SAW():
+    """""
+    This is the main class for generating a self avoiding walk(SAW).
+
+    The class consists of three functions, stored in __init__, __add__ and __pos__
+
+   __init__ is the initializing function of the SAW. It adds 2 properties to any SAW:
+   SAW.path: This property stores the coordinates of all the points of the SAW
+   SAW.type: This value is either "square", for a square SAW, 
+                or "Hex", for a hexagonal SAW.
+
+    __add__ is the function that grows the SAW. It also makes sure that the SAW doesnt block itself in
+    by making a list of illegal spots where the SAW cannot go to. It has 2 input arguments:
+    self: This property is the SAW itself, so SAW.path and SAW.type are stored in there
+    other: This is the value by how much the SAW has to grow.
+
+    __pos__ is the function that shows the SAW and calculates the total distance from the end of the SAW to the start of it.
+    To show the SAW, the function plots the points, adds lines between the points, changes the x and y lims etc.
+    Calculating the total distance for a SAW on a square lattice is very straightforward, but for hexagonal lattices
+    it is more complicated. It calls a special function "hexdistance", which calculates this total distance.
+    This function is outside of the SAW class to make sure it can also be used in other functions.
+    """"" 
     def __init__(self, path=[(0,0)],type="square"): #default path is square
         SAW.path = path                             #path stores the SAW itself in x, y coordinates
         SAW.type = type                             #the SAW can be generated on a square or hexagonal lattice
@@ -260,14 +266,24 @@ class SAW(): #main class for generating SAWs
             Xdistance=self.path[int(len(self.path))-1][0]       #calculate distance between end of SAW and 0, 0
             Ydistance=self.path[int(len(self.path))-1][1] 
             print("SAW distance:",abs(Xdistance)+abs(Ydistance))  
+            default_x_ticks=[]
+            default_y_ticks=[]
+            for i in range(-1+int(MaxDistanceNegX),int(MaxDistancePosX)+2):
+                default_x_ticks.append(i)                       #create an array for xticks, to create a proper lattice
+            for i in range(-1+int(MaxDistanceNegY),int(MaxDistancePosY+2)):
+                default_y_ticks.append(i)                       #same for yticks
+            plt.xticks(default_x_ticks)                         
+            plt.yticks(default_y_ticks)
             plt.show()
         elif SAW.type=="Hex":     #calculating this distance for a hexagonl SAW is more complicated
             print("Hexdistance:",(hexdistance(self.path[-1])))
             plt.show()
     
-
-'''Test Sample'''
-Newsaw = SAW([(0,0)],"square")
+'''
+Test Sample
+'''
+Newsaw = SAW()
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
 Pathwalking(12,"Stephan")
+Pathwalking(20, "Hex")
