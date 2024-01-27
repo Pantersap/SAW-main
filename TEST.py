@@ -23,6 +23,14 @@ rauwe average distance eindpunt-oorsprong voor die N
 rauwe total distance eindpunt-oorsprong voor die N
 """
 def hexdistance(endpoint): #calculates the average distance from endpoint to origin in a hex lattice
+        '''
+        This function calculates the average distance from endpoint to origin in a hex lattice.
+        The only required argument is the actual endpoint of the SAW itself. 
+        This function works with the x and y coördinates of the endpoint, which are obtained from this given endpoint.
+
+        Returns:
+           The distance from endpoint to origin in a hex lattice given the endpoint.
+        '''
         x = endpoint[0]
         y = endpoint[1]
         y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
@@ -31,7 +39,6 @@ def hexdistance(endpoint): #calculates the average distance from endpoint to ori
             x_offset = 2*math.floor(x_offset) #total amount of moves needed
         else:
             x_offset = 2*math.floor(x_offset)+1 # the extra move
-        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
         if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
             if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
                 distance = x_offset #staircasing works fine here
@@ -40,15 +47,44 @@ def hexdistance(endpoint): #calculates the average distance from endpoint to ori
                 #you first go to x=0, this is the x_offset. in this you moved floor(x_offset/2) times in the y direction (14->7, 15->7)
                 #because you moved that much in the y direction, you have subtract it from the extra y_offset you have to move
 
-        elif x<0: # if you moved an odd number of moves in the x direction, your last move will be a diagonal move
+        elif x<0: # if you moved an odd number of moves in the x direction, your last move will have been a diagonal move
             if (x_offset-1)>=2*(y_offset-1): #takes it into account, works out
                 distance = x_offset #staircasing works
             else:
                 distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
         return int(round(distance, 1)) #fixes rounding errors
 
-def Walking(n_max, n, point, roundedpoint, roundedpath, type, hexbool): #recursive checking, not super efficient but it works
-     #n_max = the length of a path, n = how long your path is right now, point = the point you're on, path = the path of your path (Hugo)
+def Walking(n_max, n, point, roundedpoint, roundedpath, type, hexbool): 
+    '''
+    This is a recursive function for calculating 2 things:
+        1: The number of self avoiding walks of a given length
+        2: The total distance from endpoint to origin over these walks
+
+    The idea is that for each point on our SAW we look at the paths we can take.
+    If we found a path our SAW can take, then we look at the paths the SAW can take from that point.
+    We repeat this till we have a SAW of our given length n, note this and then we backtrack to our previous point and look at what other paths we can take.
+    Eventually all the possible paths from this point are also take and we go back another point.
+    This will repeat till we eventually return to our starting point.
+    Then we do the same thing for all the other paths starting in our starting point.
+    At the end we return to our starting point with all possible paths taken and the function finally finishes running.
+
+    Arguments:
+        n_max: The given length that we want our SAW's to be
+        n: The length of our current SAW
+        point: The point in the SAW we're currently on
+        roundedpoint: point but both the x and y position are rounded to the nearest .5
+        roundedpath: Our path of all points, but with all points rounded to the nearest .5
+        type: The type of our SAW. This function works for square and hexagonal SAW's, with the square SAW being the default setting.
+        hexbool: A SAW on a hexagonal lattice has 2different option lists, depending where on the hexagon the saw is (flipped on the y axis, flips every move)
+
+    You might be surprised to see no "path" argument here. 
+    This is because we do all calculations with "roundedpath" instead of "path".
+    Because of this, a "path" argument isn't necessary.
+
+    Returns:
+        The number of self avoiding walks of a given length "n_max"
+        The total distance from endpoint to origin of all of these walks combined.
+    '''
     
 
     if n == n_max:                                  #End of the recursion
@@ -86,6 +122,27 @@ def Walking(n_max, n, point, roundedpoint, roundedpath, type, hexbool): #recursi
     return Zn, distance             #the amount of walks from our point that we found will be returned 
 
 def Pathwalking(k, type):  #our actual path calculator
+    '''
+    Pathwalking does a few things:
+       1: Calls Walking() for every value of n_max from 1 up to and including k (see Walking() )
+       2: Calculates a lattice approximation with help of the values obtained from Walking()
+       3: Calculates the lattice approximation decrease with help of the last 2 lattice approximations 
+       4: Calculates the average distance from endpoint to origin with help of the values obtained from Walking()
+
+    Arguments:
+    k: The highest value of n_max that Pathwalking will call Walking() for
+    type: The type of the SAW that Walking() will be called for (square or hexagonal, with square being the default setting)
+    
+    This function does not return anything. 
+    Instead, it prints 6 things:
+    1: What length SAW's the values below this belong to
+    2: The amount of walks of this length
+    3: The lattice constant approximation for this length
+    4: The decrease of this lattice constant approximation compared to our previous one
+    5: The average distance from endpoint to origin for this set of walks belonging to this length
+    6: The time it took to calculate all of this for this length
+    This function prints an empty line after that to make it easier to read.
+    '''
     oldμ = 69              #nonsensical value so n=1 does not cause issues at calculating the lattice constant approximation decrease
     for n in range(1,k+1): #k+1 because range does not include the last element
         start = time.time() 
@@ -96,7 +153,7 @@ def Pathwalking(k, type):  #our actual path calculator
         averagedistance = distance/Zn   #averagedistance = total distance divided by the 
         
         print(n)                        #print all important information                        
-        print("amount of paths:", Zn)
+        print("amount of walks:", Zn)
         print("lattice constant approximation:", μ)
         print("lattice constant approximation decrease:", oldμ-μ) 
         print("average distance endpoint to origin:", averagedistance)
@@ -209,7 +266,8 @@ class SAW(): #main class for generating SAWs
             plt.show()
     
 
-Newsaw = SAW([(0,0)],"Hex")
+'''Test Sample'''
+Newsaw = SAW([(0,0)],"square")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
 Pathwalking(12,"Stephan")
