@@ -31,7 +31,6 @@ def hexdistance(endpoint): #calculates the average distance from endpoint to ori
             x_offset = 2*math.floor(x_offset) #total amount of moves needed
         else:
             x_offset = 2*math.floor(x_offset)+1 # the extra move
-        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
         if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
             if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
                 distance = x_offset #staircasing works fine here
@@ -105,7 +104,26 @@ def Pathwalking(k, type):  #our actual path calculator
         print("")
         oldμ = μ      #keeps track of the previous lattice constant
 
-class SAW(): #main class for generating SAWs
+class SAW():
+    """""
+    This is the main class for generating a self avoiding walk(SAW).
+
+    The class consists of three functions, stored in __init__, __add__ and __pos__
+
+   __init__ is the initializing function of the SAW. It adds 2 properties to any SAW:
+   SAW.path: This property stores the coordinates of all the points of the SAW
+   SAW.type: This value is either "square", for a square SAW, 
+                or "Hex", for a hexagonal SAW.
+
+    __add__ is the function that grows the SAW. It also makes sure that the SAW doesnt block itself in
+    by making a list of illegal spots where the SAW cannot go to.
+
+    __pos__ is the function that shows the SAW and calculates the total distance from the end of the SAW to the start of it.
+    To show the SAW, the function plots the points, adds lines between the points, changes the x and y lims etc.
+    Calculating the total distance for a SAW on a square lattice is very straightforward, but for hexagonal lattices
+    it is more complicated. It calls a special function "hexdistance", which calculates this total distance.
+    This function is outside of the SAW class to make sure it can also be used in other functions.
+    """"" 
     def __init__(self, path=[(0,0)],type="square"): #default path is square
         SAW.path = path                             #path stores the SAW itself in x, y coordinates
         SAW.type = type                             #the SAW can be generated on a square or hexagonal lattice
