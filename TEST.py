@@ -22,39 +22,81 @@ total distance eindpunt-oorsprong voor die N
 rauwe average distance eindpunt-oorsprong voor die N
 rauwe total distance eindpunt-oorsprong voor die N
 """
-def Walking(n_max, n, point, path): #recursief checken, niet super efficiënt maar het werkt.
+def hexdistance(endpoint): #calculates the average distance from endpoint to origin in a hex lattice
+        x = endpoint[0]
+        y = endpoint[1]
+        y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
+        x_offset = abs(x)/1.5 #amount you move in the x direction after 2 moves going in the same direction, you go in the y direction ones
+        if x_offset-math.floor(x_offset)==0: #checks if x is a multiple of 1.5, hence you need to move an even number of moves to the right/left
+            x_offset = 2*math.floor(x_offset) #total amount of moves needed
+        else:
+            x_offset = 2*math.floor(x_offset)+1 # the extra move
+        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
+        if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
+            if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
+                distance = x_offset #staircasing works fine here
+            else: 
+                distance = x_offset+y_offset-math.floor(x_offset/2)
+                #you first go to x=0, this is the x_offset. in this you moved floor(x_offset/2) times in the y direction (14->7, 15->7)
+                #because you moved that much in the y direction, you have subtract it from the extra y_offset you have to move
+
+        elif x<0: # if you moved an odd number of moves in the x direction, your last move will be a diagonal move
+            if (x_offset-1)>=2*(y_offset-1): #takes it into account, works out
+                distance = x_offset #staircasing works
+            else:
+                distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
+        return int(round(distance, 1)) #fixes rounding errors
+
+def Walking(n_max, n, point, path, roundedpoint, roundedpath, type, hexbool): #recursief checken, niet super efficiënt maar het werkt.
      #n_max = the length of a path, n = how long your path is right now, point = the point you're on, path = the path of your path (Hugo)
     
     #End of the recursion
     if n == n_max: #1 walk got finished
-        distance = abs(point[0])+abs(point[1]) #distance in square grid
+        if type == "Hex":
+            distance = hexdistance(point)
+        else:
+            distance = abs(point[0])+abs(point[1]) #distance in square grid
         return 1, distance
     
     #Body of the recursion
-    path.append(point) # adds our new point to the path 
     Zn = 0 #amount of paths leading away from this point in the path
     distance = 0 # total distance from endpoint to origin of all the paths coming from this point
-    x = point[0]
+
+    path.append(point) # adds our new point to the path: 
+    roundedpath.append(roundedpoint) #same thing with the roundedpoint
+    x = point[0] 
     y = point[1]
-    options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #your options
+
+    if type == "Hex": # hex lattice
+        if hexbool == True: #Reason for these options will be added in the report
+            options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #all the potential options
+        else: #either True or false
+            options = [(x-1, y), (x+1/2, y+math.sqrt(3)/2), (x+1/2, y-math.sqrt(3)/2)]
+    else: #square lattice
+        options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #your options
+
     for i in range(0,len(options)): #checkt elk mogelijke pad vanaf een bepaald punt
         newpoint = options[i] #our new point
-        if newpoint not in path:
-            Newvalues = Walking(n_max,n+1,newpoint,path)
+        roundednewpoint = (round((2*options[i][0]),0)/2, round((2*options[i][1]),0)/2) #rounded option
+        if roundednewpoint not in roundedpath:
+            Newvalues = Walking(n_max,n+1,newpoint,path,roundednewpoint,roundedpath,type,hexbool*-1)  #swaps hexbool because the saw moves ones
             Zn += Newvalues[0]
             distance += Newvalues[1]
 
     #out of the recursion
     path.remove(point) #we've found every walk from our point, so we go back to our previous point in the path
+    roundedpath.remove(roundedpoint) #same thing with roundedpath
 
     return Zn, distance # the amount of walks from our point that we found will be given back
 
-def Pathwalking(k): #our actual path calculator, that calculates the red stuff 
+def Pathwalking(k, type): #our actual path calculator, that calculates the red stuff 
     oldμ = 69 #nonsensical value so n=1 doesn't cause issues at calculating the lattice constant approximation decrease
     for n in range(1,k+1): #k+1 cause range doesn't pick the last element
         start = time.time()
         path = []
-        Zn, distance = Walking(n, 0, (0,0), path) #starts in (0,0) on an empty saw (length 0)
+        roundedpath = [] #alleen voor hex
+        hexbool = True #alleen voor hex
+        Zn, distance = Walking(n, 0, (0,0), path, (0,0), roundedpath, type, hexbool) #starts in (0,0) on an empty saw (length 0)
         μ = Zn**(1/n) #lattice constant approximation
         averagedistance = distance/Zn # averagedistance = total distance divided by the amount
         print(n)
@@ -140,32 +182,6 @@ class HEX(): #Hexagonal Lattice, work in progress
     def __init__(self, path=[(0,0)]):
         HEX.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
     #2D self-avoiding random walk laten groeien
-    
-    def hexdistance(self): #calculates the average distance from endpoint to origin in a hex lattice
-        point = self.path[-1] #endpoint
-        x = point[0]
-        y = point[1]
-        y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
-        x_offset = abs(x)/1.5 #amount you move in the x direction after 2 moves going in the same direction, you go in the y direction ones
-        if x_offset-math.floor(x_offset)==0: #checks if x is a multiple of 1.5, hence you need to move an even number of moves to the right/left
-            x_offset = 2*math.floor(x_offset) #total amount of moves needed
-        else:
-            x_offset = 2*math.floor(x_offset)+1 # the extra move
-        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
-        if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
-            if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
-                distance = x_offset #staircasing works fine here
-            else: 
-                distance = x_offset+y_offset-math.floor(x_offset/2)
-                #you first go to x=0, this is the x_offset. in this you moved floor(x_offset/2) times in the y direction (14->7, 15->7)
-                #because you moved that much in the y direction, you have subtract it from the extra y_offset you have to move
-
-        elif x<0: # if you moved an odd number of moves in the x direction, your last move will be a diagonal move
-            if (x_offset-1)>=2*(y_offset-1): #takes it into account, works out
-                distance = x_offset #staircasing works
-            else:
-                distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
-        print("hex distance:", int(round(distance, 1))) #fixes rounding errors
 
     def __add__(self, other): #self = length of path and other is how much you grow it by
         self2 = copy.copy(self) #kopiërt de self
@@ -243,7 +259,7 @@ class HEX(): #Hexagonal Lattice, work in progress
         #average saw length: total length divided by total points       
         AvgLength=TotalLength/(len(self.path)-1)
         # print(AvgLength) not important appearently this wasn't even what was asked
-        distance = HEX.hexdistance(self) #distance endpoint to origin
+        print("Hexdistance:", (hexdistance(self.path[-1]))) # prints distance endpoint to origin
         plt.show()
     
 
@@ -262,4 +278,4 @@ Updatedsaw = Newsaw+30
 Updatedhex = Newhex+30
 Updatedsaw.__pos__()
 Updatedhex.__pos__()
-Pathwalking(18)
+Pathwalking(25, "Hex")
