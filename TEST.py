@@ -203,13 +203,21 @@ class SAW(): #main class for generating SAWs
             Xdistance=self.path[int(len(self.path))-1][0]       #calculate distance between end of SAW and 0, 0
             Ydistance=self.path[int(len(self.path))-1][1] 
             print("SAW distance:",abs(Xdistance)+abs(Ydistance))  
+            default_x_ticks=[]
+            default_y_ticks=[]
+            for i in range(-1+int(MaxDistanceNegX),int(MaxDistancePosX)+2):
+                default_x_ticks.append(i)                       #create an array for xticks, to create a proper lattice
+            for i in range(-1+int(MaxDistanceNegY),int(MaxDistancePosY+2)):
+                default_y_ticks.append(i)                       #same for yticks
+            plt.xticks(default_x_ticks)                         
+            plt.yticks(default_y_ticks)
             plt.show()
         elif SAW.type=="Hex":     #calculating this distance for a hexagonl SAW is more complicated
             print("Hexdistance:",(hexdistance(self.path[-1])))
             plt.show()
     
 
-Newsaw = SAW([(0,0)],"Hex")
+Newsaw = SAW([(0,0)],"square")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
 Pathwalking(12,"Stephan")
