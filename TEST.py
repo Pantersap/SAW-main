@@ -22,51 +22,6 @@ total distance eindpunt-oorsprong voor die N
 rauwe average distance eindpunt-oorsprong voor die N
 rauwe total distance eindpunt-oorsprong voor die N
 """
-def Walking(n_max, n, point, path): #recursive checking, not super efficient but it works
-     #n_max = the length of a path, n = how long your path is right now, point = the point you're on, path = the path of your path 
-    
-    #End of the recursion
-    if n == n_max:                              #1 walk got finished
-        distance = abs(point[0])+abs(point[1])  #distance in square grid, needed for calculating avg distance
-        return 1, distance
-    
-                         #body of the recursion
-    path.append(point)   #adds our new point to the path 
-    Zn = 0               #amount of paths leading away from this point in the path
-    distance = 0         #total distance from endpoint to origin of all the paths coming from this point
-    x = point[0]
-    y = point[1]
-    options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #available path options
-    for i in range(0,len(options)):                    #checks every possible path from a certain point
-        newpoint = options[i]                          #our new point
-        if newpoint not in path:
-            Newvalues = Walking(n_max,n+1,newpoint,path)
-            Zn += Newvalues[0]
-            distance += Newvalues[1]
-
-                        #out of the recursion
-    path.remove(point)  #we found every walk from our point, so we go back to our previous point in the path
-
-    return Zn, distance # the amount of walks from our point that we found will be returned
-
-def Pathwalking(k):        #our actual path calculator
-    oldμ = 69              #nonsensical value so n=1 does not cause issues at calculating the lattice constant approximation decrease
-    for n in range(1,k+1): #k+1 because range does not pick the last element
-        start = time.time()
-        path = []
-        Zn, distance = Walking(n, 0, (0,0), path) #starts in (0,0) on an empty saw (length 0)
-        μ = Zn**(1/n)                             #lattice constant approximation
-        averagedistance = distance/Zn             #averagedistance = total distance divided by the amount
-        print(n)
-        print("amount of paths:", Zn)
-        print("lattice constant approximation:", μ)
-        if n>1:
-            print("lattice constant approximation decrease:", oldμ-μ) 
-        print("average distance endpoint to origin:", averagedistance)
-        end = time.time()
-        print("time taken:", end-start)
-        print("")
-        oldμ = μ                                  #keeps track of the previous lattice constant
 def hexdistance(endpoint): #calculates the average distance from endpoint to origin in a hex lattice
         x = endpoint[0]
         y = endpoint[1]
@@ -91,6 +46,65 @@ def hexdistance(endpoint): #calculates the average distance from endpoint to ori
             else:
                 distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
         return int(round(distance, 1)) #fixes rounding errors
+
+def Walking(n_max, n, point, roundedpoint, roundedpath, type, hexbool): #recursive checking, not super efficient but it works
+     #n_max = the length of a path, n = how long your path is right now, point = the point you're on, path = the path of your path (Hugo)
+    
+
+    if n == n_max:                                  #End of the recursion
+        if type == "Hex":                           #1 walk got finished
+            distance = hexdistance(point)
+        else:
+            distance = abs(point[0])+abs(point[1])  #distance in square grid, needed for calculating avg distance
+        return 1, distance
+
+    Zn = 0                 #amount of paths leading away from this point in the path
+    distance = 0           #total distance from endpoint to origin of all the paths coming from this point 
+    #body of the recursion   
+    roundedpath.append(roundedpoint) #adds our new point to the path 
+    x = point[0] 
+    y = point[1]
+
+    if type == "Hex": 
+        if hexbool == True: 
+            options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #available path options for hex
+        else: 
+            options = [(x-1, y), (x+1/2, y+math.sqrt(3)/2), (x+1/2, y-math.sqrt(3)/2)]
+    else: 
+        options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]  #available path options for square
+
+    for i in range(0,len(options)):                    #checks every possible path from a certain point 
+        newpoint = options[i]                          #our new point  
+        roundednewpoint = (round((2*options[i][0]),0)/2, round((2*options[i][1]),0)/2) 
+        if roundednewpoint not in roundedpath:
+            Newvalues = Walking(n_max,n+1,newpoint,roundednewpoint,roundedpath,type,hexbool*-1) 
+            Zn += Newvalues[0]
+            distance += Newvalues[1]
+    #out of the recursion
+    roundedpath.remove(roundedpoint)#we found every walk from our point, so we go back to our previous point in the path
+
+    return Zn, distance             #the amount of walks from our point that we found will be returned 
+
+def Pathwalking(k, type):  #our actual path calculator
+    oldμ = 69              #nonsensical value so n=1 does not cause issues at calculating the lattice constant approximation decrease
+    for n in range(1,k+1): #k+1 because range does not include the last element
+        start = time.time() 
+        roundedpath = [] 
+        hexbool = True 
+        Zn, distance = Walking(n, 0, (0,0), (0,0), roundedpath, type, hexbool) #starts in (0,0) on an empty saw (length 0)
+        μ = Zn**(1/n)                   #lattice constant approximation
+        averagedistance = distance/Zn   #averagedistance = total distance divided by the 
+        
+        print(n)                        #print all important information                        
+        print("amount of paths:", Zn)
+        print("lattice constant approximation:", μ)
+        print("lattice constant approximation decrease:", oldμ-μ) 
+        print("average distance endpoint to origin:", averagedistance)
+        end = time.time()
+        print("time taken:", end-start)
+        print("")
+        oldμ = μ      #keeps track of the previous lattice constant
+
 class SAW(): #main class for generating SAWs
     def __init__(self, path=[(0,0)],type="square"): #default path is square
         SAW.path = path                             #path stores the SAW itself in x, y coordinates
@@ -198,4 +212,4 @@ class SAW(): #main class for generating SAWs
 Newsaw = SAW([(0,0)],"Hex")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
-Pathwalking(10)
+Pathwalking(12,"Stephan")
