@@ -4,7 +4,7 @@ plt.style.use('Solarize_Light2')
 import copy
 import time
 import math
-""" We still gotta do stuf with the super class that like combines the 2, but idk maybe tuesday
+""" 
  dingen die we in de recursieve formule van Z_N moeten berekenen:
 1: aantal walks, gwn de recursieve formule, er steeds 1 bij optrekken aan het einde van de walk
 2: lattice constant, doe je aan het hele einde, door gwn z_n^(1/n_max) te doen
@@ -193,11 +193,7 @@ class SAW(): #main class for generating SAWs
             print("SAW distance:", int(round(distance, 1)))                 #fixes rounding errors
             plt.show()
     
-#main
-    
-#if __name__ == '__main__': 
-# path = pathing(100000) #decides the length of the saw
-# show_path(path)
+
 Newsaw = SAW([(0,0)],"Hex")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
