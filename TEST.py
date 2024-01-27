@@ -67,7 +67,30 @@ def Pathwalking(k):        #our actual path calculator
         print("time taken:", end-start)
         print("")
         oldμ = μ                                  #keeps track of the previous lattice constant
+def hexdistance(endpoint): #calculates the average distance from endpoint to origin in a hex lattice
+        x = endpoint[0]
+        y = endpoint[1]
+        y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
+        x_offset = abs(x)/1.5 #amount you move in the x direction after 2 moves going in the same direction, you go in the y direction ones
+        if x_offset-math.floor(x_offset)==0: #checks if x is a multiple of 1.5, hence you need to move an even number of moves to the right/left
+            x_offset = 2*math.floor(x_offset) #total amount of moves needed
+        else:
+            x_offset = 2*math.floor(x_offset)+1 # the extra move
+        # combo's van steeds 1 directie in de x, je sneller y is nul bereikt dan x = 0 wil je hier
+        if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
+            if x_offset>=2*y_offset: #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
+                distance = x_offset #staircasing works fine here
+            else: 
+                distance = x_offset+y_offset-math.floor(x_offset/2)
+                #you first go to x=0, this is the x_offset. in this you moved floor(x_offset/2) times in the y direction (14->7, 15->7)
+                #because you moved that much in the y direction, you have subtract it from the extra y_offset you have to move
 
+        elif x<0: # if you moved an odd number of moves in the x direction, your last move will be a diagonal move
+            if (x_offset-1)>=2*(y_offset-1): #takes it into account, works out
+                distance = x_offset #staircasing works
+            else:
+                distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
+        return int(round(distance, 1)) #fixes rounding errors
 class SAW(): #main class for generating SAWs
     def __init__(self, path=[(0,0)],type="square"): #default path is square
         SAW.path = path                             #path stores the SAW itself in x, y coordinates
@@ -168,33 +191,11 @@ class SAW(): #main class for generating SAWs
             print("SAW distance:",abs(Xdistance)+abs(Ydistance))  
             plt.show()
         elif SAW.type=="Hex":     #calculating this distance for a hexagonl SAW is more complicated
-            point = self.path[-1] #endpoint
-            x = point[0]
-            y = point[1]
-            y_offset = 2*abs(y)/math.sqrt(3) #1 move is sqrt(3)/2, amount of times you have to move down/up in 1 
-            x_offset = abs(x)/1.5            #amount you move in the x direction after 2 moves going in the same direction, you go in the y direction ones
-            if x_offset-math.floor(x_offset)==0:  #checks if x is a multiple of 1.5, hence you need to move an even number of moves to the right/left
-                x_offset = 2*math.floor(x_offset) #total amount of moves needed
-            else:
-                x_offset = 2*math.floor(x_offset)+1 #the extra move
-            if x>=0: #if you moved an odd number of moves in the x direction, your last move will have been one moving directly one to the right  without moving in the y direction
-                if x_offset>=2*y_offset:            #you reach y=0 before x=0 by going in the x direction the entire time and up/down in the y ones every 2 turns
-                    distance = x_offset             #staircasing works fine here
-                else: 
-                    distance = x_offset+y_offset-math.floor(x_offset/2)
-                    #you first go to x=0, this is the x_offset. in this you moved floor(x_offset/2) times in the y direction (14->7, 15->7)
-                    #because you moved that much in the y direction, you have subtract it from the extra y_offset you have to move
-
-            elif x<0: #if you moved an odd number of moves in the x direction, your last move will be a diagonal move
-                if (x_offset-1)>=2*(y_offset-1): #takes it into account, works out
-                    distance = x_offset          #staircasing works
-                else:
-                    distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
-            print("SAW distance:", int(round(distance, 1)))                 #fixes rounding errors
+            print("Hexdistance:",(hexdistance(self.path[-1])))
             plt.show()
     
 
 Newsaw = SAW([(0,0)],"Hex")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
-#Pathwalking(0)
+Pathwalking(10)
