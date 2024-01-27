@@ -4,7 +4,7 @@ plt.style.use('Solarize_Light2')
 import copy
 import time
 import math
-""" We still gotta do stuf with the super class that like combines the 2, but idk maybe tuesday
+""" 
  dingen die we in de recursieve formule van Z_N moeten berekenen:
 1: aantal walks, gwn de recursieve formule, er steeds 1 bij optrekken aan het einde van de walk
 2: lattice constant, doe je aan het hele einde, door gwn z_n^(1/n_max) te doen
@@ -47,112 +47,138 @@ def hexdistance(endpoint): #calculates the average distance from endpoint to ori
                 distance = x_offset+y_offset-math.floor((x_offset+1)/2) #same idea but in x_offset moves you move floor((x_offset+1)/2) times
         return int(round(distance, 1)) #fixes rounding errors
 
-def Walking(n_max, n, point, path, roundedpoint, roundedpath, type, hexbool): #recursief checken, niet super efficiënt maar het werkt.
+def Walking(n_max, n, point, roundedpoint, roundedpath, type, hexbool): #recursive checking, not super efficient but it works
      #n_max = the length of a path, n = how long your path is right now, point = the point you're on, path = the path of your path (Hugo)
     
-    #End of the recursion
-    if n == n_max: #1 walk got finished
-        if type == "Hex":
+
+    if n == n_max:                                  #End of the recursion
+        if type == "Hex":                           #1 walk got finished
             distance = hexdistance(point)
         else:
-            distance = abs(point[0])+abs(point[1]) #distance in square grid
+            distance = abs(point[0])+abs(point[1])  #distance in square grid, needed for calculating avg distance
         return 1, distance
-    
-    #Body of the recursion
-    Zn = 0 #amount of paths leading away from this point in the path
-    distance = 0 # total distance from endpoint to origin of all the paths coming from this point
 
-    path.append(point) # adds our new point to the path: 
-    roundedpath.append(roundedpoint) #same thing with the roundedpoint
+    Zn = 0                 #amount of paths leading away from this point in the path
+    distance = 0           #total distance from endpoint to origin of all the paths coming from this point 
+    #body of the recursion   
+    roundedpath.append(roundedpoint) #adds our new point to the path 
     x = point[0] 
     y = point[1]
 
-    if type == "Hex": # hex lattice
-        if hexbool == True: #Reason for these options will be added in the report
-            options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #all the potential options
-        else: #either True or false
+    if type == "Hex": 
+        if hexbool == True: 
+            options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #available path options for hex
+        else: 
             options = [(x-1, y), (x+1/2, y+math.sqrt(3)/2), (x+1/2, y-math.sqrt(3)/2)]
-    else: #square lattice
-        options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #your options
+    else: 
+        options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]  #available path options for square
 
-    for i in range(0,len(options)): #checkt elk mogelijke pad vanaf een bepaald punt
-        newpoint = options[i] #our new point
-        roundednewpoint = (round((2*options[i][0]),0)/2, round((2*options[i][1]),0)/2) #rounded option
+    for i in range(0,len(options)):                    #checks every possible path from a certain point 
+        newpoint = options[i]                          #our new point  
+        roundednewpoint = (round((2*options[i][0]),0)/2, round((2*options[i][1]),0)/2) 
         if roundednewpoint not in roundedpath:
-            Newvalues = Walking(n_max,n+1,newpoint,path,roundednewpoint,roundedpath,type,hexbool*-1)  #swaps hexbool because the saw moves ones
+            Newvalues = Walking(n_max,n+1,newpoint,roundednewpoint,roundedpath,type,hexbool*-1) 
             Zn += Newvalues[0]
             distance += Newvalues[1]
-
     #out of the recursion
-    path.remove(point) #we've found every walk from our point, so we go back to our previous point in the path
-    roundedpath.remove(roundedpoint) #same thing with roundedpath
+    roundedpath.remove(roundedpoint)#we found every walk from our point, so we go back to our previous point in the path
 
-    return Zn, distance # the amount of walks from our point that we found will be given back
+    return Zn, distance             #the amount of walks from our point that we found will be returned 
 
-def Pathwalking(k, type): #our actual path calculator, that calculates the red stuff 
-    oldμ = 69 #nonsensical value so n=1 doesn't cause issues at calculating the lattice constant approximation decrease
-    for n in range(1,k+1): #k+1 cause range doesn't pick the last element
-        start = time.time()
-        path = []
-        roundedpath = [] #alleen voor hex
-        hexbool = True #alleen voor hex
-        Zn, distance = Walking(n, 0, (0,0), path, (0,0), roundedpath, type, hexbool) #starts in (0,0) on an empty saw (length 0)
-        μ = Zn**(1/n) #lattice constant approximation
-        averagedistance = distance/Zn # averagedistance = total distance divided by the amount
-        print(n)
+def Pathwalking(k, type):  #our actual path calculator
+    oldμ = 69              #nonsensical value so n=1 does not cause issues at calculating the lattice constant approximation decrease
+    for n in range(1,k+1): #k+1 because range does not include the last element
+        start = time.time() 
+        roundedpath = [] 
+        hexbool = True 
+        Zn, distance = Walking(n, 0, (0,0), (0,0), roundedpath, type, hexbool) #starts in (0,0) on an empty saw (length 0)
+        μ = Zn**(1/n)                   #lattice constant approximation
+        averagedistance = distance/Zn   #averagedistance = total distance divided by the 
+        
+        print(n)                        #print all important information                        
         print("amount of paths:", Zn)
         print("lattice constant approximation:", μ)
-        print("lattice constant approximation decrease:", oldμ-μ) #at n=1 this is nonsense as it's the first μ
+        print("lattice constant approximation decrease:", oldμ-μ) 
         print("average distance endpoint to origin:", averagedistance)
         end = time.time()
         print("time taken:", end-start)
         print("")
-        oldμ = μ #houdt de vorige lattice constant approximation bij 
+        oldμ = μ      #keeps track of the previous lattice constant
 
-class SAW(): #Square Lattice
-    def __init__(self, path=[(0,0)]):
-        SAW.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
+class SAW(): #main class for generating SAWs
+    def __init__(self, path=[(0,0)],type="square"): #default path is square
+        SAW.path = path                             #path stores the SAW itself in x, y coordinates
+        SAW.type = type                             #the SAW can be generated on a square or hexagonal lattice
     #2D self-avoiding random walk laten groeien
-    def __add__(self, other): #self = length of path and other is how much you grow it by
-        self2 = copy.copy(self) #kopiërt de self
-        NewMaxLength = other+len(self2.path) #nieuwe maximale lengte berekenen we nu
-        CurrentPoint=self2.path[-1]
-        x, y = CurrentPoint[0], CurrentPoint[1]
-        illegal = [] #the one iteration illegal maker, to make sure that backtracking works and the SAW doesn't take the same path twice in a row
-        while len(self2.path)<NewMaxLength: 
-            options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #all the potential options
-            # pick the closest point  without crossing itself
-            aoptions = [] # allowed options list
-            for i in range(0,len(options)):
-                if options[i] not in self2.path and options[i] not in illegal:
-                    aoptions.append(options[i]) # stopt ze in de toegestaande opties
-            if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
-                illegal.append((x,y)) #makes this point illegal for 1 iteration so that it wont literally take this path again
-                del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
-                x, y = self2.path[-1][0], self2.path[-1][1] #x, y back to your old x, y   
-            else: # if there are options
-                u, v = choice(aoptions) #finds a random path from the possible options
-                x, y = u, v #swaps back to our original values
-                self2.path.append((x, y)) #new piece of path added
-        return self2
+    def __add__(self, other):                    #self stores the SAW and other is how much you grow it by
+        if SAW.type=="square":
+            self2 = copy.copy(self)              #copies the SAW
+            NewMaxLength = other+len(self2.path) #calculate end saw length
+            CurrentPoint=self2.path[-1]
+            x, y = CurrentPoint[0], CurrentPoint[1]
+            illegal = [] #this array stores points the SAW cannot visit, as it would block itself
+            while len(self2.path)<NewMaxLength: 
+                options = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)] #all the potential options
+                aoptions = []                                      #allowed options list so it doesnt cross itself
+                for i in range(0,len(options)):
+                    if options[i] not in self2.path and options[i] not in illegal:
+                        aoptions.append(options[i])             #add current option to allowed options
+                if len(aoptions)==0:                            #if there are no 'legal moves' the SAW will start backtracking
+                    illegal.append((x,y))                       #makes this point illegal so it doesnt take this path again
+                    del self2.path[-1]                          #deletes your currentpoint from self2.path (the SAW's path)
+                    x, y = self2.path[-1][0], self2.path[-1][1] #x, y back to  old x, y   
+                else: # if there are allowed options
+                    u, v = choice(aoptions)   #finds a random direction from the possible options
+                    x, y = u, v               #swaps back to our original values
+                    self2.path.append((x, y)) #new piece of path added
+            return self2
+        elif SAW.type=="Hex":       #if the SAW is on a hexagonal grid
+            self2 = copy.copy(self) #some parts of the code are similar to square grid
+            NewMaxLength = other+len(self2.path) 
+            CurrentPoint=self2.path[-1]
+            x, y = CurrentPoint[0], CurrentPoint[1]
+            illegal = [] 
+            hexbool = True      #2 different option lists, depending where on the hexagon the saw is (flipped on the y axis, flips every move)
+            roundedpath = []    #to fix floating point errors, we will only look at y rounded down to the nearest .5
+            for i in range(0,len(self2.path)):
+                roundedpath.append((self2.path[i][0], math.floor(2*self2.path[i][1])/2)) #i'th path, you round y down to the nearest .5. x is already a multiple of .5
+                
+            while len(self2.path)<NewMaxLength:
+                if hexbool == True: #reason for these options will be added in the report
+                    options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #all the potential options
+                else: #either True or false
+                    options =  [(x-1, y), (x+1/2, y+math.sqrt(3)/2), (x+1/2, y-math.sqrt(3)/2)]
 
-    #show plot
-    def __pos__(self): # het tonen van de SAW 
-        plt.figure(figsize=(100, 100))
-        # draw points
-        plt.scatter(*zip(*self.path), s=10, c='k')
-        # draw lines in red
-        plt.plot(*zip(*self.path), c='r')
-        TotalLength=0
-        MaxDistancePosX=0 
+                #pick the closest point  without crossing itself
+                aoptions = [] #allowed options list
+                for i in range(0,len(options)):
+                    roundedoption = (math.floor(2*options[i][0])/2, math.floor(2*options[i][1])/2) #rounded option
+                    if roundedoption not in roundedpath and roundedoption not in illegal:
+                        aoptions.append(options[i]) #adds this option to allowed options
+                if len(aoptions)==0:                #if there are no possible paths left before our SAW got a length of n, the SAW will start backracking
+                    illegal.append((math.floor(2*x)/2, math.floor(2*y)/2)) #makes this point illegal for 1 iteration so that the SAW will not take this path again (it's already rounded for use)
+                    del self2.path[-1]                          #deletes your currentpoint from self2.path (the SAW's path)
+                    del roundedpath[-1]                         #also has to delete the rounded version of this point
+                    x, y = self2.path[-1][0], self2.path[-1][1] #x,y back to old x, y
+                else: #if there are options
+                    u, v = choice(aoptions)     #finds a random path from the possible options
+                    x, y = u, v                 #swaps back to our original values
+                    self2.path.append((x, y))   #new piece of path added
+                    roundedpath.append((math.floor(2*x)/2, math.floor(2*y)/2))
+                hexbool = hexbool*-1# you are moving either by adding a new path or by deleting your last path, so hexbool changes
+            return self2
+    
+    def __pos__(self): #show plot and calculate distance from endpoint to 0, 0
+        plt.figure()
+        plt.scatter(*zip(*self.path), s=10, c='k')  #draw SAW points
+        plt.plot(*zip(*self.path), c='r')           #connect SAW points with black lines
+        MaxDistancePosX=0           #keep track of SAW extremities in n,e,s,w direction
         MaxDistanceNegX=0  
         MaxDistancePosY=0 
         MaxDistanceNegY=0      
         for i in range(1,len(self.path)):    #go through all points of the saw
-            CurrentPoint=self.path[i]        
-            Length=abs(CurrentPoint[0])+abs(CurrentPoint[1])    #length of current point in saw from 0,0
-            TotalLength +=Length
-            if CurrentPoint[0]>MaxDistancePosX:     #keep track of the biggest distance from 0,0 in the saw
+            CurrentPoint=self.path[i]        #whenever a point is further from 0,0 than any point before that, store that information
+            if CurrentPoint[0]>MaxDistancePosX:    
                 MaxDistancePosX=CurrentPoint[0]
             elif CurrentPoint[0]<MaxDistanceNegX:
                 MaxDistanceNegX=CurrentPoint[0]
@@ -162,7 +188,7 @@ class SAW(): #Square Lattice
                 MaxDistanceNegY=CurrentPoint[1]
         Xrange=MaxDistancePosX-MaxDistanceNegX          #check which axis has a greater range
         Yrange=MaxDistancePosY-MaxDistanceNegY
-        if Xrange>Yrange:                           #set the other axis to the same range so the saw gets plotted in a grid with equal x and y lims
+        if Xrange>Yrange:                               #set the other axis to the same range so the saw gets plotted in a grid with equal x and y lims
             MaxDistancePosY+=(Xrange-Yrange)/2
             MaxDistanceNegY-=(Xrange-Yrange)/2
         elif Yrange>Xrange:
@@ -173,109 +199,17 @@ class SAW(): #Square Lattice
         plt.ylim(MaxDistanceNegY-1,MaxDistancePosY+1)
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')  
-        #average saw length: total length divided by total points       
-        AvgLength=TotalLength/(len(self.path)-1)
-        print(AvgLength)  
-        plt.show()
-
-class HEX(): #Hexagonal Lattice, work in progress
-    def __init__(self, path=[(0,0)]):
-        HEX.path = path # het pad als koppeltjes, meegegeven als je niks hebt meegegeven
-    #2D self-avoiding random walk laten groeien
-
-    def __add__(self, other): #self = length of path and other is how much you grow it by
-        self2 = copy.copy(self) #kopiërt de self
-        NewMaxLength = other+len(self2.path) #nieuwe maximale lengte berekenen we nu
-        CurrentPoint=self2.path[-1]
-        x, y = CurrentPoint[0], CurrentPoint[1]
-        illegal = [] #the one iteration illegal maker, to make sure that backtracking works and the SAW doesn't take the same path twice in a row
-        hexbool = True #2 different option lists, depending where on the hexagon you are (flipped on the y axis, flips every move)
-        roundedpath = [] #To fix floating point errors, we will only look at y rounded down to the nearest .5
-        for i in range(0,len(self2.path)):
-            roundedpath.append((self2.path[i][0], math.floor(2*self2.path[i][1])/2)) #i'th path, you round y down to the nearest .5. x is already a multiple of .5
-            
-        while len(self2.path)<NewMaxLength:
-            if hexbool == True: #Reason for these options will be added in the report
-                options = [(x+1, y), (x-1/2, y+math.sqrt(3)/2), (x-1/2, y-math.sqrt(3)/2)] #all the potential options
-            else: #either True or false
-                options =  [(x-1, y), (x+1/2, y+math.sqrt(3)/2), (x+1/2, y-math.sqrt(3)/2)]
-
-            # pick the closest point  without crossing itself
-            aoptions = [] # allowed options list
-            for i in range(0,len(options)):
-                roundedoption = (math.floor(2*options[i][0])/2, math.floor(2*options[i][1])/2) #rounded option
-                if roundedoption not in roundedpath and roundedoption not in illegal:
-                    aoptions.append(options[i]) # stopt ze in de toegestaande opties
-            if len(aoptions)==0: #if there are no possible paths left before our SAW got a length of n, we're gonna backtrack as much as necessary
-                illegal.append((math.floor(2*x)/2, math.floor(2*y)/2)) #makes this point illegal for 1 iteration so that it wont literally take this path again (it's already rounded for use)
-                del self2.path[-1] # deletes your currentpoint from self2.path (your SAW's path)
-                del roundedpath[-1] #obviously also has to delete the rounded version of this point
-                x, y = self2.path[-1][0], self2.path[-1][1] #x,y back to your old x, y
-            else: # if there are options
-                u, v = choice(aoptions) #finds a random path from the possible options
-                x, y = u, v #swaps back to our original values
-                self2.path.append((x, y)) #new piece of path added
-                roundedpath.append((math.floor(2*x)/2, math.floor(2*y)/2))
-            hexbool = hexbool*-1# you're moving either by adding a new path or by deleting your last path, so hexbool changes
-        return self2
-
-    #show plot
-    def __pos__(self):
-        plt.figure(figsize=(100, 100))
-        # draw points
-        plt.scatter(*zip(*self.path), s=10, c='k')
-        # draw lines in red
-        plt.plot(*zip(*self.path), c='r')
-        TotalLength=0
-        MaxDistancePosX=0 
-        MaxDistanceNegX=0  
-        MaxDistancePosY=0 
-        MaxDistanceNegY=0      
-        for i in range(1,len(self.path)):    #go through all points of the saw
-            CurrentPoint=self.path[i]        
-            Length=abs(CurrentPoint[0])+abs(CurrentPoint[1])    #length of current point in saw from 0,0
-            TotalLength +=Length
-            if CurrentPoint[0]>MaxDistancePosX:     #keep track of the biggest distance from 0,0 in the saw
-                MaxDistancePosX=CurrentPoint[0]
-            elif CurrentPoint[0]<MaxDistanceNegX:
-                MaxDistanceNegX=CurrentPoint[0]
-            if CurrentPoint[1]>MaxDistancePosY:
-                MaxDistancePosY=CurrentPoint[1]
-            elif CurrentPoint[1]<MaxDistanceNegY:
-                MaxDistanceNegY=CurrentPoint[1]
-        Xrange=MaxDistancePosX-MaxDistanceNegX          #check which axis has a greater range
-        Yrange=MaxDistancePosY-MaxDistanceNegY
-        if Xrange>Yrange:                           #set the other axis to the same range so the saw gets plotted in a grid with equal x and y lims
-            MaxDistancePosY+=(Xrange-Yrange)/2
-            MaxDistanceNegY-=(Xrange-Yrange)/2
-        elif Yrange>Xrange:
-            MaxDistancePosX+=(Yrange-Xrange)/2
-            MaxDistanceNegX-=(Yrange-Xrange)/2
-
-        plt.xlim(MaxDistanceNegX-1,MaxDistancePosX+1)       #update x and y lims
-        plt.ylim(MaxDistanceNegY-1,MaxDistancePosY+1)
-        ax = plt.gca()
-        ax.set_aspect('equal', adjustable='box')  
-        #average saw length: total length divided by total points       
-        AvgLength=TotalLength/(len(self.path)-1)
-        # print(AvgLength) not important appearently this wasn't even what was asked
-        print("Hexdistance:", (hexdistance(self.path[-1]))) # prints distance endpoint to origin
-        plt.show()
+        if SAW.type=="square":
+            Xdistance=self.path[int(len(self.path))-1][0]       #calculate distance between end of SAW and 0, 0
+            Ydistance=self.path[int(len(self.path))-1][1] 
+            print("SAW distance:",abs(Xdistance)+abs(Ydistance))  
+            plt.show()
+        elif SAW.type=="Hex":     #calculating this distance for a hexagonl SAW is more complicated
+            print("Hexdistance:",(hexdistance(self.path[-1])))
+            plt.show()
     
 
-
-
-
-
-#main
-    
-#if __name__ == '__main__': 
-# path = pathing(100000) #decides the length of the saw
-# show_path(path)
-Newsaw = SAW()
-Newhex = HEX()
-Updatedsaw = Newsaw+30
-Updatedhex = Newhex+30
+Newsaw = SAW([(0,0)],"Hex")
+Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
-Updatedhex.__pos__()
-Pathwalking(25, "Hex")
+Pathwalking(12,"Stephan")
