@@ -116,7 +116,9 @@ class SAW():
                 or "Hex", for a hexagonal SAW.
 
     __add__ is the function that grows the SAW. It also makes sure that the SAW doesnt block itself in
-    by making a list of illegal spots where the SAW cannot go to.
+    by making a list of illegal spots where the SAW cannot go to. It has 2 input arguments:
+    self: This property is the SAW itself, so SAW.path and SAW.type are stored in there
+    other: This is the value by how much the SAW has to grow.
 
     __pos__ is the function that shows the SAW and calculates the total distance from the end of the SAW to the start of it.
     To show the SAW, the function plots the points, adds lines between the points, changes the x and y lims etc.
