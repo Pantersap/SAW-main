@@ -204,7 +204,7 @@ class SAW():
             hexbool = True      #2 different option lists, depending where on the hexagon the saw is (flipped on the y axis, flips every move)
             roundedpath = []    #to fix floating point errors, we will only look at y rounded down to the nearest .5
             for i in range(0,len(self2.path)):
-                roundedpath.append((self2.path[i][0], math.floor(2*self2.path[i][1])/2)) #i'th path, you round y down to the nearest .5. x is already a multiple of .5
+                roundedpath.append((self2.path[i][0], round((2*self2.path[i][1]),0)/2)) #i'th path, you round y down to the nearest .5. x is already a multiple of .5
                 
             while len(self2.path)<NewMaxLength:
                 if hexbool == True: #reason for these options will be added in the report
@@ -215,11 +215,11 @@ class SAW():
                 #pick the closest point  without crossing itself
                 aoptions = [] #allowed options list
                 for i in range(0,len(options)):
-                    roundedoption = (math.floor(2*options[i][0])/2, math.floor(2*options[i][1])/2) #rounded option
+                    roundedoption = ((round((2*options[i][0]),0)/2, round((2*options[i][1]),0)/2)) #rounded option
                     if roundedoption not in roundedpath and roundedoption not in illegal:
                         aoptions.append(options[i]) #adds this option to allowed options
                 if len(aoptions)==0:                #if there are no possible paths left before our SAW got a length of n, the SAW will start backracking
-                    illegal.append((math.floor(2*x)/2, math.floor(2*y)/2)) #makes this point illegal for 1 iteration so that the SAW will not take this path again (it's already rounded for use)
+                    illegal.append((round((2*x),0)/2, round((2*y),0)/2)) #makes this point illegal for 1 iteration so that the SAW will not take this path again (it's already rounded for use)
                     del self2.path[-1]                          #deletes your currentpoint from self2.path (the SAW's path)
                     del roundedpath[-1]                         #also has to delete the rounded version of this point
                     x, y = self2.path[-1][0], self2.path[-1][1] #x,y back to old x, y
@@ -227,7 +227,7 @@ class SAW():
                     u, v = choice(aoptions)     #finds a random path from the possible options
                     x, y = u, v                 #swaps back to our original values
                     self2.path.append((x, y))   #new piece of path added
-                    roundedpath.append((math.floor(2*x)/2, math.floor(2*y)/2))
+                    roundedpath.append((round((2*x),0)/2, round((2*y),0)/2))
                 hexbool = hexbool*-1# you are moving either by adding a new path or by deleting your last path, so hexbool changes
             return self2
     
@@ -282,7 +282,7 @@ class SAW():
 '''
 Test Sample
 '''
-Newsaw = SAW()
+Newsaw = SAW([(0,0)], "Hex")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
 Pathwalking(12,"Stephan")
