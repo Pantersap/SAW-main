@@ -285,5 +285,5 @@ Test Sample
 Newsaw = SAW([(0,0)], "Hex")
 Updatedsaw = Newsaw+300
 Updatedsaw.__pos__()
-Pathwalking(12,"Stephan")
+Pathwalking(12, "Stephan")
 Pathwalking(20, "Hex")
